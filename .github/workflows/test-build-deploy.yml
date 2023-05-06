@@ -71,8 +71,8 @@ jobs:
         run: |
           cd ./backend
           go mod download
-          go build -x -o bin/root_handler cmd/root_handler/main.go
-          zip -j bin/root_handler.zip bin/root_handler
+          go build -x -o bin/main cmd/root_handler/main.go
+          zip -j bin/root_handler.zip bin/main
       - uses: actions/upload-artifact@v3
         with:
           name: root_handler.zip

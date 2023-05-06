@@ -167,5 +167,6 @@ jobs:
           REALLY_DEPLOY_TO_PROD: ${{ env.REALLY_DEPLOY_TO_PROD }}
         run: |
           cd ./cdk
+          npm install -g aws-cdk@2.78.0
           npm ci
           cdk deploy --require-approval=never

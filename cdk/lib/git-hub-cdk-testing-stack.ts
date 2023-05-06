@@ -28,7 +28,7 @@ const CONTENT_BUCKET_DEPLOYMENT_REMOTE_PATH: string = "frontend";
 
 const ROOT_LAMBDA_ID: string = "rootLambda";
 const ROOT_LAMBDA_HANDLER: string = "root_handler";
-const ROOT_LAMBDA_LOCAL_PATH: string = "../backend/bin/root_handler.zip";
+const ROOT_LAMBDA_LOCAL_PATH: string = "../backend/bin";
 
 const ALB_ID: string = "alb";
 const ALB_HTTP_LISTENER_ID: string = "albHttpListener";

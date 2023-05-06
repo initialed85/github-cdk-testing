@@ -74,8 +74,8 @@ jobs:
           go build -x -o bin/root_handler cmd/root_handler/main.go
       - uses: actions/upload-artifact@v3
         with:
-          name: root_handler
-          path: ./backend/bin/root_handler
+          name: backend-bin
+          path: ./backend/bin
 
   build-frontend:
     needs: test-frontend
@@ -93,7 +93,7 @@ jobs:
           npm run build
       - uses: actions/upload-artifact@v3
         with:
-          name: build
+          name: frontend-build
           path: ./frontend/build
 
   build-infrastructure:
@@ -112,11 +112,11 @@ jobs:
           npm run build
       - uses: actions/upload-artifact@v3
         with:
-          name: bin
+          name: cdk-bin
           path: ./cdk/bin
       - uses: actions/upload-artifact@v3
         with:
-          name: lib
+          name: cdk-lib
           path: ./cdk/lib
 
   deploy-infrastructure:
@@ -133,19 +133,19 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - uses: actions/download-artifact@v3
         with:
-          name: root_handler
-          path: ./backend/bin/root_handler
+          name: backend-bin
+          path: ./backend/bin
       - uses: actions/download-artifact@v3
         with:
-          name: build
+          name: frontend-build
           path: ./frontend/build
       - uses: actions/download-artifact@v3
         with:
-          name: bin
+          name: cdk-bin
           path: ./cdk/bin
       - uses: actions/download-artifact@v3
         with:
-          name: lib
+          name: cdk-lib
           path: ./cdk/lib
       - name: Handle staging environment
         if: startsWith(github.ref, 'refs/heads/master')
@@ -165,8 +165,7 @@ jobs:
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
           REALLY_DEPLOY_TO_PROD: ${{ env.REALLY_DEPLOY_TO_PROD }}
         run: |
-          zip -j backend/bin/root_handler.zip backend/bin/root_handler
           cd ./cdk
-          npm install -g aws-cdk@2.78.0
-          npm ci
+          # npm install -g aws-cdk@2.78.0
+          # npm ci
           cdk deploy --require-approval=never

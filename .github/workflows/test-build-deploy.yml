@@ -137,10 +137,6 @@ jobs:
           echo "ENVIRONMENT=prod" >> $GITHUB_ENV
           echo "REALLY_DEPLOY_TO_PROD=yes_really_deploy_to_prod" >> $GITHUB_ENV
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18.16
-          cache-dependency-path: cdk/package-lock.json
       - uses: actions/download-artifact@v3
         with:
           name: root_handler.zip

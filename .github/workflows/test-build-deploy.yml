@@ -23,6 +23,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.19
+          cache-dependency-path: backend/go.sum
       - name: Run tests
         run: |
           cd ./backend
@@ -36,6 +37,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18.16
+          cache-dependency-path: frontend/package-lock.json
       - name: Run tests
         run: |
           cd ./frontend
@@ -49,6 +51,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18.16
+          cache-dependency-path: cdk/package-lock.json
       - name: Run tests
         run: |
           cd ./cdk
@@ -63,6 +66,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.19
+          cache-dependency-path: backend/go.sum
       - name: Run build
         run: |
           cd ./backend
@@ -82,6 +86,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18.16
+          cache-dependency-path: frontend/package-lock.json
       - name: Run build
         run: |
           cd ./frontend
@@ -100,6 +105,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18.16
+          cache-dependency-path: cdk/package-lock.json
       - name: Run build
         run: |
           cd ./cdk
@@ -122,7 +128,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Handle staging environment
-        if: startsWith(github.ref, 'refs/branches/master')
+        if: startsWith(github.ref, 'refs/heads/master')
         run: |
           echo "ENVIRONMENT=staging" >> $GITHUB_ENV
       - name: Handle prod environment
@@ -134,6 +140,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18.16
+          cache-dependency-path: cdk/package-lock.json
       - uses: actions/download-artifact@v3
         with:
           name: root_handler.zip
@@ -152,9 +159,9 @@ jobs:
           path: ./cdk/lib
       - uses: youyo/aws-cdk-github-actions@v2
         env:
-          AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
-          AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
-          AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
+          AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+          AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
           REALLY_DEPLOY_TO_PROD: ${{ env.REALLY_DEPLOY_TO_PROD }}

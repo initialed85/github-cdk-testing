@@ -71,8 +71,8 @@ jobs:
         run: |
           cd ./backend
           go mod download
-          go build -x -o bin/main cmd/root_handler/main.go
-          zip -j bin/root_handler.zip bin/main
+          go build -x -o bin/root_handler cmd/root_handler/main.go
+          zip -j bin/root_handler.zip bin/root_handler
       - uses: actions/upload-artifact@v3
         with:
           name: root_handler.zip
@@ -127,16 +127,11 @@ jobs:
       - build-infrastructure
     runs-on: ubuntu-latest
     steps:
-      - name: Handle staging environment
-        if: startsWith(github.ref, 'refs/heads/master')
-        run: |
-          echo "ENVIRONMENT=staging" >> $GITHUB_ENV
-      - name: Handle prod environment
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          echo "ENVIRONMENT=prod" >> $GITHUB_ENV
-          echo "REALLY_DEPLOY_TO_PROD=yes_really_deploy_to_prod" >> $GITHUB_ENV
       - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.16
+          cache-dependency-path: frontend/package-lock.json
       - uses: actions/download-artifact@v3
         with:
           name: root_handler.zip
@@ -153,7 +148,16 @@ jobs:
         with:
           name: lib
           path: ./cdk/lib
-      - uses: youyo/aws-cdk-github-actions@v2
+      - name: Handle staging environment
+        if: startsWith(github.ref, 'refs/heads/master')
+        run: |
+          echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+      - name: Handle prod environment
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          echo "REALLY_DEPLOY_TO_PROD=yes_really_deploy_to_prod" >> $GITHUB_ENV
+      - name: Deploy infrastructure
         env:
           AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
@@ -161,9 +165,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
           REALLY_DEPLOY_TO_PROD: ${{ env.REALLY_DEPLOY_TO_PROD }}
-        with:
-          actions_comment: false
-          debug_log: true
-          working_dir: ./cdk
-          cdk_subcommand: deploy
-          cdk_args: --require-approval=never
+        run: |
+          cd ./cdk
+          npm ci
+          cdk deploy --require-approval=never

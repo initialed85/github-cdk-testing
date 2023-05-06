@@ -16,10 +16,6 @@ ENVIRONMENT="${ENVIRONMENT:-dev}"
 
 source ./.env.sh
 
-#
-# test
-#
-
 echo -e "${CYAN_BOLD}\n\nRunning backend tests...\n${NC}"
 cd "${DIR}/backend"
 go test -v ./...

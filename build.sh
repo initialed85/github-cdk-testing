@@ -16,16 +16,12 @@ ENVIRONMENT="${ENVIRONMENT:-dev}"
 
 source ./.env.sh
 
-#
-# build
-#
-
 echo -e "${CYAN_BOLD}\n\nBuilding backend artifacts...\n${NC}"
 cd "${DIR}/backend"
 mkdir -p ./bin
 rm -fr ./bin/*
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -x -o bin/main cmd/root_handler/main.go
-zip -j bin/root_handler.zip bin/main
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -x -o bin/root_handler cmd/root_handler/main.go
+zip -j bin/root_handler.zip bin/root_handler
 
 echo -e "${CYAN_BOLD}\n\nBuilding frontend artifacts...${NC}"
 cd "${DIR}/frontend"

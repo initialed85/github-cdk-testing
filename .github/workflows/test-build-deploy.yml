@@ -159,5 +159,8 @@ jobs:
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
           REALLY_DEPLOY_TO_PROD: ${{ env.REALLY_DEPLOY_TO_PROD }}
         with:
-          cdk_subcommand: "deploy"
-          cdk_args: "--require-approval=never"
+          actions_comment: false
+          debug_log: true
+          working_dir: ./cdk
+          cdk_subcommand: deploy
+          cdk_args: --require-approval=never

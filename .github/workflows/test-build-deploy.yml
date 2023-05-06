@@ -72,11 +72,10 @@ jobs:
           cd ./backend
           go mod download
           go build -x -o bin/root_handler cmd/root_handler/main.go
-          zip -j bin/root_handler.zip bin/root_handler
       - uses: actions/upload-artifact@v3
         with:
-          name: root_handler.zip
-          path: ./backend/bin/root_handler.zip
+          name: root_handler
+          path: ./backend/bin/root_handler
 
   build-frontend:
     needs: test-frontend
@@ -134,8 +133,8 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - uses: actions/download-artifact@v3
         with:
-          name: root_handler.zip
-          path: ./backend/bin/root_handler.zip
+          name: root_handler
+          path: ./backend/bin/root_handler
       - uses: actions/download-artifact@v3
         with:
           name: build
@@ -166,6 +165,7 @@ jobs:
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
           REALLY_DEPLOY_TO_PROD: ${{ env.REALLY_DEPLOY_TO_PROD }}
         run: |
+          zip -j backend/bin/root_handler.zip backend/bin/root_handler
           cd ./cdk
           npm install -g aws-cdk@2.78.0
           npm ci

@@ -130,7 +130,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18.16
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: cdk/package-lock.json
       - uses: actions/download-artifact@v3
         with:
           name: backend-bin

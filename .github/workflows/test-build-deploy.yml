@@ -38,6 +38,7 @@ jobs:
         with:
           node-version: 18.16
           cache-dependency-path: frontend/package-lock.json
+          cache: "npm"
       - name: Run tests
         run: |
           cd ./frontend
@@ -52,6 +53,7 @@ jobs:
         with:
           node-version: 18.16
           cache-dependency-path: cdk/package-lock.json
+          cache: "npm"
       - name: Run tests
         run: |
           cd ./cdk
@@ -86,6 +88,7 @@ jobs:
         with:
           node-version: 18.16
           cache-dependency-path: frontend/package-lock.json
+          cache: "npm"
       - name: Run build
         run: |
           cd ./frontend
@@ -105,6 +108,7 @@ jobs:
         with:
           node-version: 18.16
           cache-dependency-path: cdk/package-lock.json
+          cache: "npm"
       - name: Run build
         run: |
           cd ./cdk
@@ -131,6 +135,7 @@ jobs:
         with:
           node-version: 18.16
           cache-dependency-path: cdk/package-lock.json
+          cache: "npm"
       - uses: actions/download-artifact@v3
         with:
           name: backend-bin
@@ -166,5 +171,6 @@ jobs:
           REALLY_DEPLOY_TO_PROD: ${{ env.REALLY_DEPLOY_TO_PROD }}
         run: |
           cd ./cdk
+          npm ci
           npm install -g aws-cdk@2.78.0
           cdk deploy --require-approval=never

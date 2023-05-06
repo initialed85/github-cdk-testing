@@ -1,0 +1,125 @@
+name: test-build-deploy
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*.*.*"
+
+env:
+  GOOS: linux
+  GOARCH: amd64
+  CGO_ENABLED: 0
+  ENVIRONMENT: dev
+
+jobs:
+  test-backend:
+    env:
+      _LAMBDA_SERVER_PORT: 8080
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - run: |
+          cd ./backend
+          go mod download
+          go test -v ./...
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.16
+      - run: |
+          cd ./frontend
+          npm ci
+          npm run test
+
+  test-infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.16
+      - run: |
+          cd ./cdk
+          npm ci
+          npm run test
+
+  build-backend:
+    needs: test-backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - run: |
+          cd ./backend
+          go mod download
+          go build -x -o bin/root_handler cmd/root_handler/main.go
+          zip -j bin/root_handler.zip bin/root_handler
+      - uses: actions/upload-artifact@v3
+        with:
+          name: root_handler.zip
+          path: ./bin/root_handler.zip
+
+  build-frontend:
+    needs: test-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.16
+      - run: |
+          cd ./frontend
+          npm ci
+          npm run build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: ./build
+
+  deploy-infrastructure:
+    needs:
+      - build-backend
+      - build-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - if: startsWith(github.ref, 'refs/branches/master')
+        run: |
+          echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+      - if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          echo "REALLY_DEPLOY_TO_PROD=yes_really_deploy_to_prod" >> $GITHUB_ENV
+      - run: |
+          echo ""
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.16
+      - uses: actions/download-artifact@v3
+        with:
+          name: homework
+      - run: |
+          cd ./cdk
+          npm ci
+      - uses: youyo/aws-cdk-github-actions@v2
+        env:
+          AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
+          AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ENVIRONMENT: ${{ env.ENVIRONMENT }}
+          REALLY_DEPLOY_TO_PROD: ${{ env.REALLY_DEPLOY_TO_PROD }}
+        with:
+          cdk_subcommand: "deploy"
+          cdk_args: "--require-approval=never"

@@ -23,7 +23,8 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.19
-      - run: |
+      - name: test
+        run: |
           cd ./backend
           go mod download
           go test -v ./...
@@ -35,7 +36,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18.16
-      - run: |
+      - name: test
+        run: |
           cd ./frontend
           npm ci
           npm run test
@@ -47,7 +49,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18.16
-      - run: |
+      - name: test
+        run: |
           cd ./cdk
           npm ci
           npm run test
@@ -60,7 +63,8 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.19
-      - run: |
+      - name: build
+        run: |
           cd ./backend
           go mod download
           go build -x -o bin/root_handler cmd/root_handler/main.go
@@ -78,7 +82,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18.16
-      - run: |
+      - name: build
+        run: |
           cd ./frontend
           npm ci
           npm run build
@@ -87,31 +92,63 @@ jobs:
           name: build
           path: ./build
 
+  build-infrastructure:
+    needs: test-infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.16
+      - name: build
+        run: |
+          cd ./cdk
+          npm ci
+          npm run build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: bin
+          path: ./bin
+      - uses: actions/upload-artifact@v3
+        with:
+          name: lib
+          path: ./lib
+
   deploy-infrastructure:
     needs:
       - build-backend
       - build-frontend
     runs-on: ubuntu-latest
     steps:
-      - if: startsWith(github.ref, 'refs/branches/master')
+      - name: handle staging environment
+        if: startsWith(github.ref, 'refs/branches/master')
         run: |
           echo "ENVIRONMENT=staging" >> $GITHUB_ENV
-      - if: startsWith(github.ref, 'refs/tags/v')
+      - name: handle prod environment
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           echo "ENVIRONMENT=prod" >> $GITHUB_ENV
           echo "REALLY_DEPLOY_TO_PROD=yes_really_deploy_to_prod" >> $GITHUB_ENV
-      - run: |
-          echo ""
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: 18.16
       - uses: actions/download-artifact@v3
         with:
-          name: homework
-      - run: |
-          cd ./cdk
-          npm ci
+          name: root_handler.zip
+          path: ./backend/bin/root_handler.zip
+      - uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: ./frontend/build
+      - uses: actions/download-artifact@v3
+        with:
+          name: bin
+          path: ./cdk/bin
+      - uses: actions/download-artifact@v3
+        with:
+          name: lib
+          path: ./cdk/lib
       - uses: youyo/aws-cdk-github-actions@v2
         env:
           AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}

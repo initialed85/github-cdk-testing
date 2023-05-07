@@ -14,7 +14,29 @@ env:
   ENVIRONMENT: dev
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Handle staging environment
+        if: startsWith(github.ref, 'refs/heads/master')
+        run: |
+          echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+      - name: Handle prod environment
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          echo "REALLY_DEPLOY_TO_PROD=yes_really_deploy_to_prod" >> $GITHUB_ENV
+      - name: Handle Git environment
+        run: |
+          GIT_DESCRIBE=$(git describe --all --long --always --dirty --broken)
+          echo "GIT_DESCRIBE=${GIT_DESCRIBE}" >> $GITHUB_ENV
+          GIT_COMMIT_HASH=$(git rev-parse --verify HEAD)
+          echo "GIT_COMMIT_HASH=${GIT_COMMIT_HASH}" >> $GITHUB_ENV
+
   test-backend:
+    needs:
+      - setup
     env:
       _LAMBDA_SERVER_PORT: 8080
     runs-on: ubuntu-latest
@@ -31,6 +53,8 @@ jobs:
           go test -v ./...
 
   test-frontend:
+    needs:
+      - setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -46,6 +70,8 @@ jobs:
           npm run test
 
   test-infrastructure:
+    needs:
+      - setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -61,7 +87,8 @@ jobs:
           npm run test
 
   build-backend:
-    needs: test-backend
+    needs:
+      - test-backend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -80,7 +107,8 @@ jobs:
           path: ./backend/bin
 
   build-frontend:
-    needs: test-frontend
+    needs:
+      - test-frontend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -100,7 +128,8 @@ jobs:
           path: ./frontend/build
 
   build-infrastructure:
-    needs: test-infrastructure
+    needs:
+      - test-infrastructure
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -152,15 +181,6 @@ jobs:
         with:
           name: cdk-lib
           path: ./cdk/lib
-      - name: Handle staging environment
-        if: startsWith(github.ref, 'refs/heads/master')
-        run: |
-          echo "ENVIRONMENT=staging" >> $GITHUB_ENV
-      - name: Handle prod environment
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          echo "ENVIRONMENT=prod" >> $GITHUB_ENV
-          echo "REALLY_DEPLOY_TO_PROD=yes_really_deploy_to_prod" >> $GITHUB_ENV
       - name: Deploy infrastructure
         env:
           AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}

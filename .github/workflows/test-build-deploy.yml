@@ -160,7 +160,7 @@ jobs:
       - name: Deploy frontend artifacts
         run: frontend/deploy.sh
 
-  deploy-stack-infrastructure:
+  deploy-application-infrastructure:
     needs:
       - deploy-backend-artifacts
       - deploy-frontend-artifacts

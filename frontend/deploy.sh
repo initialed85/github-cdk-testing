@@ -15,10 +15,14 @@ trap cleanup EXIT
 source ../.env.sh
 
 if [[ "${CI}" == "true" ]]; then
-  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-  unzip awscliv2.zip
-  sudo ./aws/install || true
-  sudo apt-get install -y jq
+  if ! command -v aws >/dev/null 2>&1; then
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install || true
+  fi
+  if ! command -v jq >/dev/null 2>&1; then
+    sudo apt-get install -y jq
+  fi
 fi
 
 echo -e "${CYAN_BOLD}\nDeploying frontend artifacts\n${NC}"

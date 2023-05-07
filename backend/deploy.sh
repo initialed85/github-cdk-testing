@@ -15,22 +15,24 @@ trap cleanup EXIT
 source ../.env.sh
 
 if [[ "${CI}" == "true" ]]; then
-  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-  unzip awscliv2.zip
-  sudo ./aws/install || true
-  sudo apt-get install -y jq
+  if ! command -v aws >/dev/null 2>&1; then
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install || true
+  fi
+  if ! command -v jq >/dev/null 2>&1; then
+    sudo apt-get install -y jq
+  fi
 fi
 
 if ! test -e ../cdk/outputs.json; then
   echo "error: failed to find outputs.json; may need initial deploy / local deploy for sync"
-  ls -al ../cdk
   exit 1
 fi
 
 echo -e "${CYAN_BOLD}\nDeploying backend artifacts\n${NC}"
 if ! bucket_name=$(jq -r ".Dependencies.artifactBucketbucketName" ../cdk/outputs.json); then
   echo "error: failed to get artifact bucket name from outputs.json; may need initial deploy / local deploy for sync"
-  cat ../cdk/outputs.json
   exit 1
 fi
 

@@ -108,7 +108,7 @@ jobs:
           cache-dependency-path: cdk/package-lock.json
           cache: "npm"
       - name: Deploy infrastructure
-        run: cdk/deploy.sh Dependency
+        run: cdk/deploy.sh Dependencies
       - uses: actions/upload-artifact@v3
         with:
           name: cdk-outputs-json
@@ -178,4 +178,4 @@ jobs:
           cache-dependency-path: cdk/package-lock.json
           cache: "npm"
       - name: Deploy infrastructure
-        run: cdk/deploy.sh
+        run: cdk/deploy.sh --all

@@ -22,7 +22,7 @@ source ../.env.sh
 # TODO: download backend artifacts from S3
 # TODO: download frontend artifacts from S3
 
-cdk deploy --require-approval=never --outputs-file=outputs.json --all
+cdk deploy --require-approval=never --outputs-file=outputs.json "${@}"
 
 echo -e "${CYAN_BOLD}Outputs:\n${NC}"
 cat ./outputs.json

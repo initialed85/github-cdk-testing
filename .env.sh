@@ -33,7 +33,7 @@ export _LAMBDA_SERVER_PORT
 CI=${CI:-}
 export CI
 
-if [[ "${SKIP_SOURCE_ENV}" != "1" ]]; then
+if [[ "${SKIP_AWS_AND_GIT_INTERACTIONS}" != "1" ]]; then
   AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID:-$(aws sts get-caller-identity | jq -r .Account)}
   if [[ "${AWS_ACCOUNT_ID}" == "" ]]; then
     echo -e "error: AWS_ACCOUNT_ID empty or unset"
@@ -105,5 +105,5 @@ if [[ "${ENVIRONMENT}" == "" ]]; then
 fi
 export ENVIRONMENT
 
-SKIP_SOURCE_ENV=1
-export SKIP_SOURCE_ENV
+SKIP_AWS_AND_GIT_INTERACTIONS=1
+export SKIP_AWS_AND_GIT_INTERACTIONS

@@ -13,8 +13,8 @@ function cleanup() {
 trap cleanup EXIT
 
 if [[ "${CI}" != "true" ]]; then
-  SKIP_SOURCE_ENV=1
-  export SKIP_SOURCE_ENV
+  SKIP_AWS_AND_GIT_INTERACTIONS=1
+  export SKIP_AWS_AND_GIT_INTERACTIONS
 fi
 
 source ./.env.sh

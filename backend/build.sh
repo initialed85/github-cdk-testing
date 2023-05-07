@@ -12,14 +12,12 @@ function cleanup() {
 }
 trap cleanup EXIT
 
-if [[ "${CI}" != "true" ]]; then
-  SKIP_SOURCE_ENV=1
-  export SKIP_SOURCE_ENV
-  source ../.env.sh
-  print_environment
-else
-  source ../.env.sh
-  print_environment
+SKIP_AWS_AND_GIT_INTERACTIONS=1
+export SKIP_AWS_AND_GIT_INTERACTIONS
+source ../.env.sh
+print_environment
+
+if [[ "${CI}" == "true" ]]; then
   GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go mod download
 fi
 

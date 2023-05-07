@@ -15,7 +15,6 @@ trap cleanup EXIT
 SKIP_AWS_AND_GIT_INTERACTIONS=1
 export SKIP_AWS_AND_GIT_INTERACTIONS
 source ../.env.sh
-print_environment
 
 if [[ "${CI}" == "true" ]]; then
   GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go mod download

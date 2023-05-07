@@ -18,12 +18,11 @@ if [[ "${CI}" == "true" ]]; then
 fi
 
 source ../.env.sh
-print_environment
 
 # TODO: download backend artifacts from S3
 # TODO: download frontend artifacts from S3
 
-cdk deploy --require-approval=never --outputs-file=outputs.json
+cdk deploy --require-approval=never --outputs-file=outputs.json --all
 
 echo -e "${CYAN_BOLD}Outputs:\n${NC}"
 cat ./outputs.json

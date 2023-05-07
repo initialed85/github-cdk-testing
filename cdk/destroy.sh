@@ -18,6 +18,5 @@ if [[ "${CI}" == "true" ]]; then
 fi
 
 source ../.env.sh
-print_environment
 
-cdk destroy --require-approval=never
+cdk destroy --force "${@}"

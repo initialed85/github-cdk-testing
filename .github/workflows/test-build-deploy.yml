@@ -90,33 +90,10 @@ jobs:
           name: frontend-build
           path: ./frontend/build
 
-  build-infrastructure:
-    needs:
-      - test-infrastructure
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18.16
-          cache-dependency-path: cdk/package-lock.json
-          cache: "npm"
-      - name: Run build
-        run: cdk/build.sh
-      - uses: actions/upload-artifact@v3
-        with:
-          name: cdk-bin
-          path: ./cdk/bin
-      - uses: actions/upload-artifact@v3
-        with:
-          name: cdk-lib
-          path: ./cdk/lib
-
-  deploy-infrastructure:
+  deploy-dependencies-infrastructure:
     needs:
       - build-backend
       - build-frontend
-      - build-infrastructure
     runs-on: ubuntu-latest
     env:
       AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
@@ -130,21 +107,75 @@ jobs:
           node-version: 18.16
           cache-dependency-path: cdk/package-lock.json
           cache: "npm"
+      - name: Deploy infrastructure
+        run: cdk/deploy.sh Dependency
+      - uses: actions/upload-artifact@v3
+        with:
+          name: cdk-outputs-json
+          path: ./cdk/outputs.json
+
+  deploy-backend-artifacts:
+    needs:
+      - deploy-dependencies-infrastructure
+      - build-backend
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         with:
           name: backend-bin
           path: ./backend/bin
       - uses: actions/download-artifact@v3
         with:
+          name: cdk-outputs-json
+          path: ./cdk/
+      - name: Deploy backend artifacts
+        run: backend/deploy.sh
+
+  deploy-frontend-artifacts:
+    needs:
+      - deploy-dependencies-infrastructure
+      - build-frontend
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
           name: frontend-build
           path: ./frontend/build
       - uses: actions/download-artifact@v3
         with:
-          name: cdk-bin
-          path: ./cdk/bin
-      - uses: actions/download-artifact@v3
+          name: cdk-outputs-json
+          path: ./cdk/
+      - name: Deploy frontend artifacts
+        run: frontend/deploy.sh
+
+  deploy-stack-infrastructure:
+    needs:
+      - deploy-backend-artifacts
+      - deploy-frontend-artifacts
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          name: cdk-lib
-          path: ./cdk/lib
+          node-version: 18.16
+          cache-dependency-path: cdk/package-lock.json
+          cache: "npm"
       - name: Deploy infrastructure
         run: cdk/deploy.sh

@@ -18,7 +18,6 @@ if [[ "${CI}" != "true" ]]; then
 fi
 
 source ./.env.sh
-print_environment
 
 echo -e "${CYAN_BOLD}\n\nRunning backend tests...\n${NC}"
 backend/test.sh

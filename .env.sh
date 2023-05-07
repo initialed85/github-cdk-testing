@@ -11,7 +11,7 @@ export RED_BOLD
 export NC
 
 function print_environment() {
-  echo -e "${CYAN_BOLD}\nEnvironment:\n${NC}"
+  echo -e "${CYAN_BOLD}Environment:\n${NC}"
   echo -e "_LAMBDA_SERVER_PORT=${_LAMBDA_SERVER_PORT}"
   echo -e "CI=${CI}"
   echo -e "AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}"
@@ -68,8 +68,6 @@ if [[ "${SKIP_AWS_AND_GIT_INTERACTIONS}" != "1" ]]; then
   GIT_DESCRIBE=${GIT_DESCRIBE:-$(git describe --all --long --always --dirty --broken)}
 
   GIT_COMMIT_HASH=${GIT_COMMIT_HASH:-$(git rev-parse --verify HEAD)}
-else
-  ENVIRONMENT="${ENVIRONMENT:-dev}"
 fi
 
 export AWS_ACCOUNT_ID
@@ -91,7 +89,7 @@ if [[ "${ENVIRONMENT}" == "" ]]; then
       ENVIRONMENT="staging"
     fi
   else
-    ENVIRONMENT="dev-${USER}"
+    ENVIRONMENT="${USER}Dev"
   fi
 fi
 

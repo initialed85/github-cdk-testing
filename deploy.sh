@@ -13,4 +13,8 @@ trap cleanup EXIT
 source ./.env.sh
 print_environment
 
+backend/deploy.sh
+frontend/deploy.sh
+
 echo -e "${CYAN_BOLD}\nDeploying infrastructure...\n${NC}"
+cdk/deploy.sh

@@ -18,7 +18,6 @@ if [[ "${CI}" != "true" ]]; then
 fi
 
 source ./.env.sh
-print_environment
 
 echo -e "${CYAN_BOLD}\n\nBuilding backend artifacts...\n${NC}"
 backend/build.sh
@@ -26,5 +25,5 @@ backend/build.sh
 echo -e "${CYAN_BOLD}\n\nBuilding frontend artifacts...${NC}"
 frontend/build.sh
 
-echo -e "${CYAN_BOLD}\n\nBuilding infrastructure artifacts...${NC}"
+echo -e "${CYAN_BOLD}\nBuilding infrastructure artifacts...${NC}"
 cdk/build.sh

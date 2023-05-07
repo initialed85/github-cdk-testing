@@ -13,6 +13,22 @@ function cleanup() {
 trap cleanup EXIT
 
 source ../.env.sh
-print_environment
 
-# TODO: upload frontend artifacts to S3
+if [[ "${CI}" == "true" ]]; then
+  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  unzip awscliv2.zip
+  sudo ./aws/install
+  sudo apt-get install -y jq
+fi
+
+echo -e "${CYAN_BOLD}\nDeploying frontend artifacts\n${NC}"
+if ! bucket_name=$(jq -r ".Dependencies.artifactBucketbucketName" ../cdk/outputs.json); then
+  echo "error: failed to get artifact bucket name from outputs.json; may need initial deploy / local deploy for sync"
+  exit 1
+fi
+
+bucket_path="s3://${bucket_name}/${GIT_DESCRIBE}/frontend/build.zip"
+
+cd ./build
+zip -r build.zip .
+aws s3 cp ./build.zip "${bucket_path}"

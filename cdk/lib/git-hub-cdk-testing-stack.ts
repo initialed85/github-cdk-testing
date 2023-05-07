@@ -4,11 +4,13 @@ import * as construct from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import * as elbv2_targets from "aws-cdk-lib/aws-elasticloadbalancingv2-targets";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as resourcegroups from "aws-cdk-lib/aws-resourcegroups";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
+import { DependenciesStack } from "./dependencies-stack";
 
 const INDEX_HTML: string = "index.html";
 const ERROR_HTML: string = "error.html";
@@ -20,6 +22,10 @@ const RESOURCE_GROUP_ID: string = "resourceGroup";
 const VPC_ID: string = "vpc";
 const VPC_MAX_AXS: number = 2; // need minimum 2 for the ALB
 const VPC_NAT_GATEWAYS: number = 0; // because they're costly
+
+const USER_ID: string = "user";
+
+const ARTIFACT_BUCKET_ID: string = "artifactBucket";
 
 const CONTENT_BUCKET_ID: string = "contentBucket";
 const CONTENT_BUCKET_ORIGIN_ACCESS_IDENTITY_ID: string =
@@ -39,6 +45,10 @@ const ALB_HTTP_TARGET_ID: string = "albHttpTarget";
 
 const CDN_DISTRIBUTION_ID: string = "cdnDistribution";
 
+export interface GitHubCdkTestingStackProps extends cdk.StackProps {
+  dependenciesStack: DependenciesStack;
+}
+
 export class GitHubCdkTestingStack extends cdk.Stack {
   constructor(
     scope: construct.Construct,
@@ -46,7 +56,7 @@ export class GitHubCdkTestingStack extends cdk.Stack {
     environment: string,
     gitDescribe: string,
     gitCommitHash: string,
-    props?: cdk.StackProps
+    props?: GitHubCdkTestingStackProps
   ) {
     super(scope, id, props);
 
@@ -64,8 +74,14 @@ export class GitHubCdkTestingStack extends cdk.Stack {
       resourceQuery: {
         type: "CLOUDFORMATION_STACK_1_0",
       },
-      tags: [environmentTag],
+      tags: [environmentTag, gitDescribeTag, gitCommitHashTag],
     });
+
+    const user = new iam.User(this, USER_ID);
+    resourceGroup.resources?.push(user.userArn);
+
+    const artifactBucket = props?.dependenciesStack?.artifactBucket!;
+    artifactBucket.grantRead(user);
 
     const vpc = new ec2.Vpc(this, VPC_ID, {
       maxAzs: VPC_MAX_AXS,
@@ -96,6 +112,9 @@ export class GitHubCdkTestingStack extends cdk.Stack {
     new cdk.CfnOutput(this, "contentBucket.bucketDomainName", {
       value: contentBucket.bucketDomainName,
     });
+    new cdk.CfnOutput(this, "contentBucket.bucketName", {
+      value: contentBucket.bucketName,
+    });
 
     const contentBucketOriginAccessIdentity =
       new cloudfront.OriginAccessIdentity(
@@ -106,7 +125,12 @@ export class GitHubCdkTestingStack extends cdk.Stack {
     contentBucket.grantRead(contentBucketOriginAccessIdentity);
 
     new s3deploy.BucketDeployment(this, CONTENT_BUCKET_DEPLOYMENT_ID, {
-      sources: [s3deploy.Source.asset(CONTENT_BUCKET_DEPLOYMENT_LOCAL_PATH)],
+      sources: [
+        s3deploy.Source.bucket(
+          artifactBucket,
+          `${gitDescribe}/frontend/build.zip`
+        ),
+      ],
       destinationBucket: contentBucket,
       destinationKeyPrefix: CONTENT_BUCKET_DEPLOYMENT_REMOTE_PATH,
     });
@@ -114,7 +138,10 @@ export class GitHubCdkTestingStack extends cdk.Stack {
     const rootLambda = new lambda.Function(this, ROOT_LAMBDA_ID, {
       runtime: lambda.Runtime.GO_1_X,
       handler: ROOT_LAMBDA_HANDLER,
-      code: lambda.Code.fromAsset(ROOT_LAMBDA_LOCAL_PATH),
+      code: lambda.Code.fromBucket(
+        artifactBucket,
+        `${gitDescribe}/backend/bin.zip`
+      ),
       vpc: vpc,
     });
     resourceGroup.resources?.push(rootLambda.functionArn);

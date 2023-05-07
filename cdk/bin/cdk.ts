@@ -2,6 +2,7 @@
 
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
+import { DependenciesStack } from "../lib/dependencies-stack";
 import { GitHubCdkTestingStack } from "../lib/git-hub-cdk-testing-stack";
 
 const getEnvironment = (key: string): string => {
@@ -16,10 +17,7 @@ const getEnvironment = (key: string): string => {
 
 const AWS_ACCOUNT_ID: string = getEnvironment("AWS_ACCOUNT_ID");
 const AWS_DEFAULT_REGION: string = getEnvironment("AWS_DEFAULT_REGION");
-const ENVIRONMENT: string = getEnvironment("ENVIRONMENT")
-  .trim()
-  .toLowerCase()
-  .replace("_", "-");
+const ENVIRONMENT: string = getEnvironment("ENVIRONMENT").trim();
 const GIT_DESCRIBE: string = getEnvironment("GIT_DESCRIBE");
 const GIT_COMMIT_HASH: string = getEnvironment("GIT_COMMIT_HASH");
 
@@ -31,14 +29,14 @@ if (ENVIRONMENT === PROD && process.env.REALLY_DEPLOY_TO_PROD !== PROD_GUARD) {
   );
 }
 
+const DEPENDENCIES_IDENTIFIER: string = "Dependencies";
 const BASE_IDENTIFIER: string = "GitHubCdkTesting";
 
 const app = new cdk.App();
 
-const gitHubCdkTestingStack = new GitHubCdkTestingStack(
+const dependenciesStack = new DependenciesStack(
   app,
-  `${ENVIRONMENT}Environment${BASE_IDENTIFIER}`,
-  ENVIRONMENT,
+  DEPENDENCIES_IDENTIFIER,
   GIT_DESCRIBE,
   GIT_COMMIT_HASH,
   {
@@ -48,3 +46,20 @@ const gitHubCdkTestingStack = new GitHubCdkTestingStack(
     },
   }
 );
+
+const gitHubCdkTestingStack = new GitHubCdkTestingStack(
+  app,
+  `${ENVIRONMENT}${BASE_IDENTIFIER}`,
+  ENVIRONMENT,
+  GIT_DESCRIBE,
+  GIT_COMMIT_HASH,
+  {
+    env: {
+      account: AWS_ACCOUNT_ID,
+      region: AWS_DEFAULT_REGION,
+    },
+    dependenciesStack: dependenciesStack,
+  }
+);
+
+gitHubCdkTestingStack.addDependency(dependenciesStack);

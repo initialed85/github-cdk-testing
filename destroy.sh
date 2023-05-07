@@ -14,4 +14,4 @@ source ./.env.sh
 print_environment
 
 echo -e "${RED_BOLD}\nDestroying infrastructure...\n${NC}"
-cdk/destroy.sh
+cdk/destroy.sh "${@}"

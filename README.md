@@ -30,6 +30,8 @@ Ensure you've installed these (versions are just what I'm using):
 - npm 9.5.1
 - tsc 5.0.4
 - jq jq-1.6
+- aws-cli 2.11.17
+- act 0.2.45
 
 And ensure you have your `~/.aws/config` and `~/.aws/credentials` files set up- though if you'd prefer not to rely on
 the AWS CLI, you can use these environment variables:
@@ -54,6 +56,7 @@ go mod download
 
 cd ../cdk
 npm ci
+npm install -g aws-cdk@2.78.0
 ```
 
 ### Test
@@ -71,14 +74,16 @@ npm ci
 ### Deploy
 
 ```shell
-ENVIRONMENT=dev ./deploy.sh
+ENVIRONMENT="dev-${USER}" ./deploy.sh
 ```
 
 ### Destroy
 
 ```shell
-ENVIRONMENT=dev ./destroy.sh
+ENVIRONMENT="dev-${USER}" ./destroy.sh
 ```
+
+Note: Implies `ENVIRONMENT=dev-${USER}`
 
 ## Interactions
 
@@ -118,4 +123,36 @@ curl -L https://0123456789abcd.cloudfront.net/api/
 
 # will not be cached because it's a POST
 curl -L -X POST -H 'Content-Type: application/json' -d '{"hello": "world"}' https://0123456789abcd.cloudfront.net/api/
+```
+
+## Further info
+
+### Environments
+
+Usage of the `ENVIRONMENT` env var controls the environment you're deploying to- literally all it does is change the
+prefix on the stack ID (which results in a completely separate stack).
+
+So if you were to run this:
+
+```shell
+ENVIRONMENT="pr1234" ./deploy.sh
+```
+
+Your stack ID would be `pr1234EnvironmentGitHubCdkTesting`.
+
+This feature is used in the GitHub Actions definitions to deploy to different environments based on the branch or tag;
+e.g.:
+
+- Commits to `master` branch result in a deployment to the `staging` environment
+- Commits with a `v*.*.*` tag pattern result in a deployment to the `prod` environment
+
+### GitHub Actions
+
+GitHub Actions is hard to debug, fortunately we can use [act](https://github.com/nektos/act) to execute our workflows
+locally using Docker.
+
+To use this via the wrapper script (note: this will attempt a deploy to the `${USER}Dev` environment):
+
+```shell
+./run-github-actions-locally.sh
 ```

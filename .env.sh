@@ -62,6 +62,12 @@ export ENVIRONMENT
 REALLY_DEPLOY_TO_PROD=${REALLY_DEPLOY_TO_PROD:-}
 export REALLY_DEPLOY_TO_PROD
 
+GIT_DESCRIBE=$(git describe --all --long --always --dirty --broken)
+export GIT_DESCRIBE
+
+GIT_COMMIT_HASH=$(git rev-parse --verify HEAD)
+export GIT_COMMIT_HASH
+
 function print_environment() {
   echo -e "${CYAN_BOLD}Environment:\n${NC}"
   echo -e "CI=${CI}"
@@ -72,6 +78,8 @@ function print_environment() {
   echo -e "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}"
   echo -e "ENVIRONMENT=${ENVIRONMENT}"
   echo -e "REALLY_DEPLOY_TO_PROD=${REALLY_DEPLOY_TO_PROD}"
+  echo -e "GIT_DESCRIBE=${GIT_DESCRIBE}"
+  echo -e "GIT_COMMIT_HASH=${GIT_COMMIT_HASH}"
 }
 
 SKIP_SOURCE_ENV=1

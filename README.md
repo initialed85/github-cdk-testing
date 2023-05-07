@@ -16,9 +16,10 @@ This repo is a test project to try and demonstrate the following:
 - CDK (TypeScript) to deploy to AWS
     - With a focus on ease of creating alternate environments (e.g. dev, staging, prod)
     - **TODO** - Deploy a data store of some sort
-- **TODO** - GitHub Actions to trigger everything
-    - A commit to the `master` branch triggers a `staging` deployment
+- GitHub Actions to trigger everything
     - A release tag triggers a `prod` deployment
+    - A commit to the `master` branch triggers a `staging` deployment
+    - A commit to any other branch triggers a `dev` deployment
 
 ## Prerequisites
 

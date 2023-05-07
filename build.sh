@@ -12,18 +12,19 @@ function cleanup() {
 }
 trap cleanup EXIT
 
-ENVIRONMENT="${ENVIRONMENT:-dev}"
+if [[ "${CI}" != "true" ]]; then
+  SKIP_SOURCE_ENV=1
+  export SKIP_SOURCE_ENV
+fi
 
 source ./.env.sh
+print_environment
 
 echo -e "${CYAN_BOLD}\n\nBuilding backend artifacts...\n${NC}"
-cd "${DIR}/backend"
-mkdir -p ./bin
-rm -fr ./bin/*
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -x -o bin/root_handler cmd/root_handler/main.go
+backend/build.sh
 
 echo -e "${CYAN_BOLD}\n\nBuilding frontend artifacts...${NC}"
-cd "${DIR}/frontend"
-mkdir -p ./build
-rm -fr ./build/*
-npm run build
+frontend/build.sh
+
+echo -e "${CYAN_BOLD}\n\nBuilding infrastructure artifacts...${NC}"
+cdk/build.sh

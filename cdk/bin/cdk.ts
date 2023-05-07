@@ -37,7 +37,7 @@ const app = new cdk.App();
 
 const gitHubCdkTestingStack = new GitHubCdkTestingStack(
   app,
-  `${ENVIRONMENT}${BASE_IDENTIFIER}`,
+  `${ENVIRONMENT}Environment${BASE_IDENTIFIER}`,
   ENVIRONMENT,
   GIT_DESCRIBE,
   GIT_COMMIT_HASH,
@@ -48,5 +48,3 @@ const gitHubCdkTestingStack = new GitHubCdkTestingStack(
     },
   }
 );
-
-console.log("gitHubCdkTestingStack = ", gitHubCdkTestingStack);

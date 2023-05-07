@@ -11,16 +11,6 @@ function cleanup() {
 trap cleanup EXIT
 
 source ./.env.sh
-
 print_environment
 
-./test.sh
-
-./build.sh
-
 echo -e "${CYAN_BOLD}\nDeploying infrastructure...\n${NC}"
-cd "${DIR}/cdk"
-cdk deploy --require-approval=never --outputs-file=outputs.json
-
-echo -e "${CYAN_BOLD}Outputs:\n${NC}"
-jq <./outputs.json

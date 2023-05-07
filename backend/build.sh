@@ -15,16 +15,12 @@ trap cleanup EXIT
 if [[ "${CI}" != "true" ]]; then
   SKIP_SOURCE_ENV=1
   export SKIP_SOURCE_ENV
+  source ../.env.sh
+  print_environment
+else
+  source ../.env.sh
+  print_environment
+  GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go mod download
 fi
 
-source ./.env.sh
-print_environment
-
-echo -e "${CYAN_BOLD}\n\nRunning backend tests...\n${NC}"
-backend/test.sh
-
-echo -e "${CYAN_BOLD}\n\nRunning frontend tests...${NC}"
-frontend/test.sh
-
-echo -e "${CYAN_BOLD}\n\nRunning infrastructure tests...${NC}"
-cdk/test.sh
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -x -o bin/root_handler cmd/root_handler/main.go

@@ -15,16 +15,12 @@ trap cleanup EXIT
 if [[ "${CI}" != "true" ]]; then
   SKIP_SOURCE_ENV=1
   export SKIP_SOURCE_ENV
+  source ../.env.sh
+  print_environment
+else
+  source ../.env.sh
+  print_environment
+  go mod download
 fi
 
-source ./.env.sh
-print_environment
-
-echo -e "${CYAN_BOLD}\n\nRunning backend tests...\n${NC}"
-backend/test.sh
-
-echo -e "${CYAN_BOLD}\n\nRunning frontend tests...${NC}"
-frontend/test.sh
-
-echo -e "${CYAN_BOLD}\n\nRunning infrastructure tests...${NC}"
-cdk/test.sh
+go test -v ./...

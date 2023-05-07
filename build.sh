@@ -12,10 +12,8 @@ function cleanup() {
 }
 trap cleanup EXIT
 
-if [[ "${CI}" != "true" ]]; then
-  SKIP_AWS_AND_GIT_INTERACTIONS=1
-  export SKIP_AWS_AND_GIT_INTERACTIONS
-fi
+SKIP_AWS_AND_GIT_INTERACTIONS=1
+export SKIP_AWS_AND_GIT_INTERACTIONS
 
 source ./.env.sh
 

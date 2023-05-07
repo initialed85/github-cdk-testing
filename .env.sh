@@ -68,6 +68,8 @@ if [[ "${SKIP_AWS_AND_GIT_INTERACTIONS}" != "1" ]]; then
   GIT_DESCRIBE=${GIT_DESCRIBE:-$(git describe --all --long --always --dirty --broken)}
 
   GIT_COMMIT_HASH=${GIT_COMMIT_HASH:-$(git rev-parse --verify HEAD)}
+else
+  ENVIRONMENT="dev"
 fi
 
 export AWS_ACCOUNT_ID

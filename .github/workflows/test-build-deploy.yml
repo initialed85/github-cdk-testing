@@ -88,11 +88,12 @@ jobs:
 
   build-backend:
     needs:
+      - setup
       - test-backend
     runs-on: ubuntu-latest
     env:
-      GIT_DESCRIBE: ${{ jobs.setup.outputs.GIT_DESCRIBE }}
-      GIT_COMMIT_HASH: ${{ jobs.setup.outputs.GIT_COMMIT_HASH }}
+      GIT_DESCRIBE: ${{ needs.setup.outputs.GIT_DESCRIBE }}
+      GIT_COMMIT_HASH: ${{ needs.setup.outputs.GIT_COMMIT_HASH }}
       GOOS: linux
       GOARCH: amd64
       CGO_ENABLED: 0
@@ -114,11 +115,12 @@ jobs:
 
   build-frontend:
     needs:
+      - setup
       - test-frontend
     runs-on: ubuntu-latest
     env:
-      GIT_DESCRIBE: ${{ jobs.setup.outputs.GIT_DESCRIBE }}
-      GIT_COMMIT_HASH: ${{ jobs.setup.outputs.GIT_COMMIT_HASH }}
+      GIT_DESCRIBE: ${{ needs.setup.outputs.GIT_DESCRIBE }}
+      GIT_COMMIT_HASH: ${{ needs.setup.outputs.GIT_COMMIT_HASH }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -138,11 +140,12 @@ jobs:
 
   build-infrastructure:
     needs:
+      - setup
       - test-infrastructure
     runs-on: ubuntu-latest
     env:
-      GIT_DESCRIBE: ${{ jobs.setup.outputs.GIT_DESCRIBE }}
-      GIT_COMMIT_HASH: ${{ jobs.setup.outputs.GIT_COMMIT_HASH }}
+      GIT_DESCRIBE: ${{ needs.setup.outputs.GIT_DESCRIBE }}
+      GIT_COMMIT_HASH: ${{ needs.setup.outputs.GIT_COMMIT_HASH }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -166,14 +169,15 @@ jobs:
 
   deploy-infrastructure:
     needs:
+      - setup
       - build-backend
       - build-frontend
       - build-infrastructure
     runs-on: ubuntu-latest
     env:
-      GIT_DESCRIBE: ${{ jobs.setup.outputs.GIT_DESCRIBE }}
-      GIT_COMMIT_HASH: ${{ jobs.setup.outputs.GIT_COMMIT_HASH }}
-      ENVIRONMENT: ${{ jobs.setup.outputs.ENVIRONMENT }}
+      GIT_DESCRIBE: ${{ needs.setup.outputs.GIT_DESCRIBE }}
+      GIT_COMMIT_HASH: ${{ needs.setup.outputs.GIT_COMMIT_HASH }}
+      ENVIRONMENT: ${{ needs.setup.outputs.ENVIRONMENT }}
       REALLY_DEPLOY_TO_PROD: ${{ env.REALLY_DEPLOY_TO_PROD }}
       AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
       AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}

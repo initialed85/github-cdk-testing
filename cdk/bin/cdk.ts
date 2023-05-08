@@ -2,64 +2,24 @@
 
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
-import { DependenciesStack } from "../lib/dependencies-stack";
-import { GitHubCdkTestingStack } from "../lib/git-hub-cdk-testing-stack";
-
-const getEnvironment = (key: string): string => {
-  const value: string | undefined = process?.env[key]?.trim();
-
-  if (value === undefined || value.trim() === "") {
-    throw new Error(`${key} env var is empty or unset`);
-  }
-
-  return value;
-};
+import { PipelineStack } from "../lib/pipeline";
+import { getEnvironment } from "../lib/helpers";
 
 const AWS_ACCOUNT_ID: string = getEnvironment("AWS_ACCOUNT_ID");
 const AWS_DEFAULT_REGION: string = getEnvironment("AWS_DEFAULT_REGION");
-const ENVIRONMENT: string = getEnvironment("ENVIRONMENT").trim();
-const GIT_DESCRIBE: string = getEnvironment("GIT_DESCRIBE");
-const GIT_COMMIT_HASH: string = getEnvironment("GIT_COMMIT_HASH");
 
-const PROD: string = "prod";
-const PROD_GUARD: string = "yes_really_deploy_to_prod";
-if (ENVIRONMENT === PROD && process.env.REALLY_DEPLOY_TO_PROD !== PROD_GUARD) {
-  throw new Error(
-    `ENVIRONMENT is prod and REALLY_DEPLOY_TO_PROD is not set to "${PROD_GUARD}"`
-  );
-}
+const PIPELINE_ID = "Pipeline";
 
-const DEPENDENCIES_IDENTIFIER: string = "Dependencies";
-const BASE_IDENTIFIER: string = "GitHubCdkTesting";
+// GitHub PAT has permissions "admin:repo_hook, public_repo"; secret recommended to be manually created; e.g.:
+// aws secretsmanager create-secret --name 'github-token' --secret-string 'ghp_abcdef...'
+const GITHUB_TOKEN_SECRET_NAME = "github-token";
 
 const app = new cdk.App();
 
-const dependenciesStack = new DependenciesStack(
-  app,
-  DEPENDENCIES_IDENTIFIER,
-  GIT_DESCRIBE,
-  GIT_COMMIT_HASH,
-  {
-    env: {
-      account: AWS_ACCOUNT_ID,
-      region: AWS_DEFAULT_REGION,
-    },
-  }
-);
-
-const gitHubCdkTestingStack = new GitHubCdkTestingStack(
-  app,
-  `${ENVIRONMENT}${BASE_IDENTIFIER}`,
-  ENVIRONMENT,
-  GIT_DESCRIBE,
-  GIT_COMMIT_HASH,
-  {
-    env: {
-      account: AWS_ACCOUNT_ID,
-      region: AWS_DEFAULT_REGION,
-    },
-    dependenciesStack: dependenciesStack,
-  }
-);
-
-gitHubCdkTestingStack.addDependency(dependenciesStack);
+const pipelineStack = new PipelineStack(app, PIPELINE_ID, {
+  env: {
+    account: AWS_ACCOUNT_ID,
+    region: AWS_DEFAULT_REGION,
+  },
+  githubTokenSecretName: GITHUB_TOKEN_SECRET_NAME,
+});

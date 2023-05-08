@@ -10,7 +10,6 @@ import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as resourcegroups from "aws-cdk-lib/aws-resourcegroups";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
-import { DependenciesStack } from "./dependencies-stack";
 
 const INDEX_HTML: string = "index.html";
 const ERROR_HTML: string = "error.html";
@@ -45,9 +44,7 @@ const ALB_HTTP_TARGET_ID: string = "albHttpTarget";
 
 const CDN_DISTRIBUTION_ID: string = "cdnDistribution";
 
-export interface GitHubCdkTestingStackProps extends cdk.StackProps {
-  dependenciesStack: DependenciesStack;
-}
+export interface GitHubCdkTestingStackProps extends cdk.StackProps {}
 
 export class GitHubCdkTestingStack extends cdk.Stack {
   constructor(
@@ -79,9 +76,6 @@ export class GitHubCdkTestingStack extends cdk.Stack {
 
     const user = new iam.User(this, USER_ID);
     resourceGroup.resources?.push(user.userArn);
-
-    const artifactBucket = props?.dependenciesStack?.artifactBucket!;
-    artifactBucket.grantRead(user);
 
     const vpc = new ec2.Vpc(this, VPC_ID, {
       maxAzs: VPC_MAX_AXS,
@@ -127,7 +121,7 @@ export class GitHubCdkTestingStack extends cdk.Stack {
     new s3deploy.BucketDeployment(this, CONTENT_BUCKET_DEPLOYMENT_ID, {
       sources: [
         s3deploy.Source.bucket(
-          artifactBucket,
+          contentBucket, // TODO: incorrect; just making code compile
           `${gitDescribe}/frontend/build.zip`
         ),
       ],
@@ -139,7 +133,7 @@ export class GitHubCdkTestingStack extends cdk.Stack {
       runtime: lambda.Runtime.GO_1_X,
       handler: ROOT_LAMBDA_HANDLER,
       code: lambda.Code.fromBucket(
-        artifactBucket,
+        contentBucket, // TODO: incorrect; just making code compile
         `${gitDescribe}/backend/bin.zip`
       ),
       vpc: vpc,

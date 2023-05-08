@@ -6,8 +6,8 @@ import {
   ShellStep,
 } from "aws-cdk-lib/pipelines";
 
-const PIPELINE_ID = "Pipeline";
-const PIPELINE_NAME = "Pipeline";
+const PIPELINE_ID = "InfraPipeline";
+const PIPELINE_NAME = "InfraPipeline";
 const SYNTH_ID = "Synth";
 
 export interface PipelineStackProps extends cdk.StackProps {
@@ -16,7 +16,7 @@ export interface PipelineStackProps extends cdk.StackProps {
   readonly githubBranch: string;
 }
 
-export class PipelineStack extends cdk.Stack {
+export class InfraPipelineStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: PipelineStackProps) {
     super(scope, id, props);
 

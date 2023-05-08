@@ -16,6 +16,8 @@ const GITHUB_TOKEN_SECRET_NAME = "github-token";
 
 const app = new cdk.App();
 
+// the PipelineStack is aware of our GitHub PAT and sets up some magic to then seamlessly stay in sync with commits to
+// this repo; ref.: https://docs.aws.amazon.com/cdk/v2/guide/cdk_pipeline.html
 const pipelineStack = new PipelineStack(app, PIPELINE_ID, {
   env: {
     account: AWS_ACCOUNT_ID,

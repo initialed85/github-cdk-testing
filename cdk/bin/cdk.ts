@@ -3,20 +3,22 @@
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { PipelineStack } from "../lib/pipeline";
-import { getEnvironment } from "../lib/helpers";
 
-const AWS_ACCOUNT_ID: string = getEnvironment("AWS_ACCOUNT_ID");
-const AWS_DEFAULT_REGION: string = getEnvironment("AWS_DEFAULT_REGION");
-
-const PIPELINE_ID = "Pipeline";
+// TODO: not sure how to inject these (because they run in CodePipeline)
+const AWS_ACCOUNT_ID = "849431480570";
+const AWS_DEFAULT_REGION = "ap-southeast-2";
 
 // GitHub PAT has permissions "admin:repo_hook, public_repo"; secret recommended to be manually created; e.g.:
 // aws secretsmanager create-secret --name 'github-token' --secret-string 'ghp_abcdef...'
 const GITHUB_TOKEN_SECRET_NAME = "github-token";
+const GITHUB_REPO = "initialed85/github-cdk-testing";
+const GITHUB_BRANCH = "master";
+
+const PIPELINE_ID = "Pipeline";
 
 const app = new cdk.App();
 
-// the PipelineStack is aware of our GitHub PAT and sets up some magic to then seamlessly stay in sync with commits to
+// we "cdk deploy" this once and then it automatically deploys on commit
 // this repo; ref.: https://docs.aws.amazon.com/cdk/v2/guide/cdk_pipeline.html
 const pipelineStack = new PipelineStack(app, PIPELINE_ID, {
   env: {
@@ -24,4 +26,6 @@ const pipelineStack = new PipelineStack(app, PIPELINE_ID, {
     region: AWS_DEFAULT_REGION,
   },
   githubTokenSecretName: GITHUB_TOKEN_SECRET_NAME,
+  githubRepo: GITHUB_REPO,
+  githubBranch: GITHUB_BRANCH,
 });

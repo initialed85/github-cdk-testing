@@ -9,11 +9,11 @@ import {
 const PIPELINE_ID = "Pipeline";
 const PIPELINE_NAME = "Pipeline";
 const SYNTH_ID = "Synth";
-const REPO = "initialed85/github-cdk-testing";
-const BRANCH = "master";
 
 export interface PipelineStackProps extends cdk.StackProps {
   readonly githubTokenSecretName: string;
+  readonly githubRepo: string;
+  readonly githubBranch: string;
 }
 
 export class PipelineStack extends cdk.Stack {
@@ -23,7 +23,7 @@ export class PipelineStack extends cdk.Stack {
     const pipeline = new CodePipeline(this, PIPELINE_ID, {
       pipelineName: PIPELINE_NAME,
       synth: new ShellStep(SYNTH_ID, {
-        input: CodePipelineSource.gitHub(REPO, BRANCH, {
+        input: CodePipelineSource.gitHub(props.githubRepo, props.githubBranch, {
           authentication: cdk.SecretValue.secretsManager(
             props.githubTokenSecretName,
             {}

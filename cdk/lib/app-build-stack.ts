@@ -7,8 +7,7 @@ import * as s3 from "aws-cdk-lib/aws-s3";
 
 const USER_ID = "User";
 const ARTIFACT_BUCKET_ID = "ArtifactBucket";
-const ARTIFACT_PATH =
-  "$CODEBUILD_WEBHOOK_TRIGGER/$CODEBUILD_RESOLVED_SOURCE_VERSION/$CODEBUILD_BUILD_NUMBER";
+const ARTIFACT_PATH = "$CODEBUILD_WEBHOOK_TRIGGER";
 const BACKEND_PROJECT_ID = "BackendProject";
 const BACKEND_PUBLIC_ECR_IMAGE = "public.ecr.aws/docker/library/golang";
 const BACKEND_PUBLIC_ECR_TAG = "1.19-bullseye";
@@ -90,8 +89,8 @@ export class AppBuildStack extends cdk.Stack {
             commands: [
               "cd ./bin",
               "zip -r backend__root_handler.zip root_handler",
-              `mkdir -p ../${ARTIFACT_PATH}`,
-              `mv backend__root_handler.zip ../${ARTIFACT_PATH}/backend__root_handler.zip`,
+              `mkdir -p /${ARTIFACT_PATH}`,
+              `mv backend__root_handler.zip /${ARTIFACT_PATH}/backend__root_handler.zip`,
             ],
           },
         },
@@ -133,13 +132,13 @@ export class AppBuildStack extends cdk.Stack {
             commands: [
               "cd ./build",
               "zip -r frontend__build.zip build",
-              `mkdir -p ../${ARTIFACT_PATH}`,
-              `mv frontend__build.zip ../${ARTIFACT_PATH}/frontend__build.zip`,
+              `mkdir -p /${ARTIFACT_PATH}`,
+              `mv frontend__build.zip /${ARTIFACT_PATH}/frontend__build.zip`,
             ],
           },
         },
         artifacts: {
-          files: [`${ARTIFACT_PATH}/backend__root_handler.zip`],
+          files: [`/${ARTIFACT_PATH}/frontend__build.zip`],
         },
       }),
       artifacts: codebuild.Artifacts.s3({

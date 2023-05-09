@@ -100,7 +100,8 @@ export class AppBuildStack extends cdk.Stack {
       }),
       artifacts: codebuild.Artifacts.s3({
         bucket: artifactBucket,
-        name: `${ARTIFACT_PATH}/frontend__build.zip`,
+        path: ARTIFACT_PATH,
+        name: "backend__root_handler.zip",
         includeBuildId: false,
         packageZip: false,
       }),
@@ -144,7 +145,8 @@ export class AppBuildStack extends cdk.Stack {
       }),
       artifacts: codebuild.Artifacts.s3({
         bucket: artifactBucket,
-        name: `${ARTIFACT_PATH}/frontend__build.zip`,
+        path: ARTIFACT_PATH,
+        name: "frontend__build.zip",
         includeBuildId: false,
         packageZip: false,
       }),

@@ -15,6 +15,7 @@ const CDK_OUT_PATH = "cdk/cdk.out";
 
 export interface PipelineStackProps extends cdk.StackProps {
   readonly githubTokenSecretName: string;
+  readonly githubOwner: string;
   readonly githubRepo: string;
   readonly githubBranch: string;
 }
@@ -28,7 +29,7 @@ export class InfraPipelineStack extends cdk.Stack {
     super(scope, id, props);
 
     const gitHub = pipelines.CodePipelineSource.gitHub(
-      props.githubRepo,
+      `${props.githubOwner}/${props.githubRepo}`,
       props.githubBranch,
       {
         authentication: cdk.SecretValue.secretsManager(

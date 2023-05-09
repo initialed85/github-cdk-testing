@@ -8,6 +8,9 @@ const USER_ID: string = "User";
 const BACKEND_PROJECT_ID = "BackendProject";
 const BACKEND_PUBLIC_ECR_IMAGE = "public.ecr.aws/docker/library/golang";
 const BACKEND_PUBLIC_ECR_TAG = "1.19-bullseye";
+const FRONTEND_PROJECT_ID = "BackendProject";
+const FRONTEND_PUBLIC_ECR_IMAGE = "public.ecr.aws/docker/library/node";
+const FRONTEND_PUBLIC_ECR_TAG = "18.16.0-bullseye";
 const APP_BUILD_STACK_ID = "AppBuildStack";
 
 export interface AppBuildStackProps extends cdk.StackProps {
@@ -67,6 +70,32 @@ export class AppBuildStack extends cdk.Stack {
             commands: [
               "go build -x -o bin/root_handler cmd/root_handler/main.go",
             ],
+          },
+        },
+      }),
+    });
+
+    const frontendProject = new codebuild.Project(this, FRONTEND_PROJECT_ID, {
+      source: gitHubSource,
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.fromDockerRegistry(
+          `${FRONTEND_PUBLIC_ECR_IMAGE}:${FRONTEND_PUBLIC_ECR_TAG}`
+        ),
+      },
+      buildSpec: codebuild.BuildSpec.fromObject({
+        version: "0.2",
+        env: {
+          variables: {},
+        },
+        phases: {
+          install: {
+            commands: ["cd ./frontend"],
+          },
+          pre_build: {
+            commands: ["npm ci"],
+          },
+          build: {
+            commands: ["npm run build"],
           },
         },
       }),

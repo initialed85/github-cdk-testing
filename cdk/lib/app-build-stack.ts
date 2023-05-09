@@ -9,24 +9,15 @@ const BACKEND_PROJECT_ID = "BackendProject";
 const BACKEND_PUBLIC_ECR_IMAGE = "docker/library/golang";
 const BACKEND_PUBLIC_ECR_TAG = "1.19-bullseye";
 const BACKEND_ECR_ID = "BackendECR";
-const BUILD_NAME = "Build";
-const SYNTH_ID = "Synth";
-const CDK_SYNTH_COMMANDS = [
-  "cd cdk",
-  "npm ci",
-  "npm run build",
-  "npx cdk synth",
-];
-const CDK_OUT_PATH = "cdk/cdk.out";
 
-export interface AppBuildStackProps extends cdk.StageProps {
+export interface AppBuildStackProps extends cdk.StackProps {
   readonly githubTokenSecretName: string;
   readonly githubOwner: string;
   readonly githubRepo: string;
   readonly githubBranch: string;
 }
 
-export class AppBuildStack extends cdk.Stage {
+export class AppBuildStack extends cdk.Stack {
   constructor(
     scope: constructs.Construct,
     id: string,

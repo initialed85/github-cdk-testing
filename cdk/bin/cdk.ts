@@ -43,4 +43,5 @@ const infraPipelineStack = new InfraPipelineStack(
 // the AppBuildStack is the stack that builds the app and deploys it to S3
 const appBuildStack = new AppBuildStack(app, APP_BUILD_STACK_ID, stackProps);
 
-infraPipelineStack.pipeline.addStage(appBuildStack);
+// infraPipelineStack.pipeline.addStage(appBuildStack);
+infraPipelineStack.addDependency(appBuildStack);

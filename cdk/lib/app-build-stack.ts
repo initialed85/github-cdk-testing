@@ -19,14 +19,14 @@ const CDK_SYNTH_COMMANDS = [
 ];
 const CDK_OUT_PATH = "cdk/cdk.out";
 
-export interface AppBuildStackProps extends cdk.StackProps {
+export interface AppBuildStackProps extends cdk.StageProps {
   readonly githubTokenSecretName: string;
   readonly githubOwner: string;
   readonly githubRepo: string;
   readonly githubBranch: string;
 }
 
-export class AppBuildStack extends cdk.Stack {
+export class AppBuildStack extends cdk.Stage {
   constructor(
     scope: constructs.Construct,
     id: string,
@@ -55,37 +55,34 @@ export class AppBuildStack extends cdk.Stack {
       BACKEND_PUBLIC_ECR_IMAGE
     );
 
-    const backendProject = new codebuild.PipelineProject(
-      this,
-      BACKEND_PROJECT_ID,
-      {
-        environment: {
-          buildImage: codebuild.LinuxBuildImage.fromEcrRepository(
-            backendEcr,
-            BACKEND_PUBLIC_ECR_TAG
-          ),
+    const backendProject = new codebuild.Project(this, BACKEND_PROJECT_ID, {
+      source: gitHubSource,
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.fromEcrRepository(
+          backendEcr,
+          BACKEND_PUBLIC_ECR_TAG
+        ),
+      },
+      buildSpec: codebuild.BuildSpec.fromObject({
+        version: "0.2",
+        env: {
+          variables: {
+            GOOS: "linux",
+            GOARCH: "amd64",
+            CGO_ENABLED: 0,
+          },
         },
-        buildSpec: codebuild.BuildSpec.fromObject({
-          version: "0.2",
-          env: {
-            variables: {
-              GOOS: "linux",
-              GOARCH: "amd64",
-              CGO_ENABLED: 0,
-            },
+        phases: {
+          install: {
+            commands: ["cd ./backend && go mod download"],
           },
-          phases: {
-            install: {
-              commands: ["cd ./backend && go mod download"],
-            },
-            build: {
-              commands: [
-                "cd ./backend && go build -x -o bin/root_handler cmd/root_handler/main.go",
-              ],
-            },
+          build: {
+            commands: [
+              "cd ./backend && go build -x -o bin/root_handler cmd/root_handler/main.go",
+            ],
           },
-        }),
-      }
-    );
+        },
+      }),
+    });
   }
 }

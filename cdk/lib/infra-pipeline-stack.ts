@@ -21,6 +21,8 @@ export interface PipelineStackProps extends cdk.StackProps {
 }
 
 export class InfraPipelineStack extends cdk.Stack {
+  public pipeline: pipelines.CodePipeline;
+
   constructor(
     scope: constructs.Construct,
     id: string,
@@ -44,7 +46,7 @@ export class InfraPipelineStack extends cdk.Stack {
       primaryOutputDirectory: CDK_OUT_PATH,
     });
 
-    const pipeline = new pipelines.CodePipeline(this, INFRA_PIPELINE_ID, {
+    this.pipeline = new pipelines.CodePipeline(this, INFRA_PIPELINE_ID, {
       pipelineName: INFRA_PIPELINE_NAME,
       synth: shellStep,
     });

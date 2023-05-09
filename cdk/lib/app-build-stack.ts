@@ -3,8 +3,12 @@ import * as constructs from "constructs";
 import * as codebuild from "aws-cdk-lib/aws-codebuild";
 import * as ecr from "aws-cdk-lib/aws-ecr";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as s3 from "aws-cdk-lib/aws-s3";
 
-const USER_ID: string = "User";
+const USER_ID = "User";
+const ARTIFACT_BUCKET_ID = "ArtifactBucket";
+const ARTIFACT_PATH =
+  "$CODEBUILD_WEBHOOK_TRIGGER/$CODEBUILD_RESOLVED_SOURCE_VERSION/$CODEBUILD_BUILD_NUMBER";
 const BACKEND_PROJECT_ID = "BackendProject";
 const BACKEND_PUBLIC_ECR_IMAGE = "public.ecr.aws/docker/library/golang";
 const BACKEND_PUBLIC_ECR_TAG = "1.19-bullseye";
@@ -43,6 +47,17 @@ export class AppBuildStack extends cdk.Stack {
     ecr.AuthorizationToken.grantRead(user);
     ecr.PublicGalleryAuthorizationToken.grantRead(user);
 
+    const artifactBucket = new s3.Bucket(this, ARTIFACT_BUCKET_ID, {
+      enforceSSL: false,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      versioned: false,
+      objectLockEnabled: false,
+      eventBridgeEnabled: false,
+      accessControl: s3.BucketAccessControl.BUCKET_OWNER_FULL_CONTROL,
+      objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
+    });
+
     const backendProject = new codebuild.Project(this, BACKEND_PROJECT_ID, {
       source: gitHubSource,
       environment: {
@@ -71,9 +86,26 @@ export class AppBuildStack extends cdk.Stack {
               "go build -x -o bin/root_handler cmd/root_handler/main.go",
             ],
           },
+          post_build: {
+            commands: [
+              "cd ./bin",
+              "zip -r backend__root_handler.zip root_handler",
+              `mkdir -p ../${ARTIFACT_PATH}`,
+              `mv backend__root_handler.zip ../${ARTIFACT_PATH}/backend__root_handler.zip`,
+            ],
+          },
+        },
+        artifacts: {
+          files: [`${ARTIFACT_PATH}/backend__root_handler.zip`],
         },
       }),
+      artifacts: codebuild.Artifacts.s3({
+        bucket: artifactBucket,
+        includeBuildId: false,
+        packageZip: false,
+      }),
     });
+    artifactBucket.grantReadWrite(backendProject);
 
     const frontendProject = new codebuild.Project(this, FRONTEND_PROJECT_ID, {
       source: gitHubSource,
@@ -97,9 +129,26 @@ export class AppBuildStack extends cdk.Stack {
           build: {
             commands: ["npm run build"],
           },
+          post_build: {
+            commands: [
+              "cd ./build",
+              "zip -r frontend__build.zip build",
+              `mkdir -p ../${ARTIFACT_PATH}`,
+              `mv frontend__build.zip ../${ARTIFACT_PATH}/frontend__build.zip`,
+            ],
+          },
+        },
+        artifacts: {
+          files: [`${ARTIFACT_PATH}/backend__root_handler.zip`],
         },
       }),
+      artifacts: codebuild.Artifacts.s3({
+        bucket: artifactBucket,
+        includeBuildId: false,
+        packageZip: false,
+      }),
     });
+    artifactBucket.grantReadWrite(backendProject);
   }
 }
 

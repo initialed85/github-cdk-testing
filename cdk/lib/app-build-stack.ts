@@ -88,14 +88,14 @@ export class AppBuildStack extends cdk.Stack {
           post_build: {
             commands: [
               "cd ./bin",
-              "zip -r backend__root_handler.zip root_handler",
+              "zip -r backend__root_handler.zip .",
               `mkdir -p /${ARTIFACT_PATH}`,
               `mv backend__root_handler.zip /${ARTIFACT_PATH}/backend__root_handler.zip`,
             ],
           },
         },
         artifacts: {
-          files: [`${ARTIFACT_PATH}/backend__root_handler.zip`],
+          files: [`/${ARTIFACT_PATH}/backend__root_handler.zip`],
         },
       }),
       artifacts: codebuild.Artifacts.s3({
@@ -131,7 +131,7 @@ export class AppBuildStack extends cdk.Stack {
           post_build: {
             commands: [
               "cd ./build",
-              "zip -r frontend__build.zip build",
+              "zip -r frontend__build.zip .",
               `mkdir -p /${ARTIFACT_PATH}`,
               `mv frontend__build.zip /${ARTIFACT_PATH}/frontend__build.zip`,
             ],

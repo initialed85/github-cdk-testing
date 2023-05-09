@@ -6,7 +6,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 
 const USER_ID: string = "User";
 const BACKEND_PROJECT_ID = "BackendProject";
-const BACKEND_PUBLIC_ECR_IMAGE = "docker/library/golang";
+const BACKEND_PUBLIC_ECR_IMAGE = "public.ecr.aws/docker/library/golang";
 const BACKEND_PUBLIC_ECR_TAG = "1.19-bullseye";
 const BACKEND_ECR_ID = "BackendECR";
 

@@ -9,6 +9,7 @@ const BACKEND_PROJECT_ID = "BackendProject";
 const BACKEND_PUBLIC_ECR_IMAGE = "public.ecr.aws/docker/library/golang";
 const BACKEND_PUBLIC_ECR_TAG = "1.19-bullseye";
 const BACKEND_ECR_ID = "BackendECR";
+const APP_BUILD_STACK_ID = "AppBuildStack";
 
 export interface AppBuildStackProps extends cdk.StackProps {
   readonly githubTokenSecretName: string;
@@ -31,7 +32,7 @@ export class AppBuildStack extends cdk.Stack {
       webhook: true,
       webhookFilters: [
         codebuild.FilterGroup.inEventOf(codebuild.EventAction.PUSH).andBranchIs(
-          props.githubBranch // TODO
+          props.githubBranch
         ),
       ],
     });
@@ -71,5 +72,19 @@ export class AppBuildStack extends cdk.Stack {
         },
       }),
     });
+  }
+}
+
+export class AppBuildStage extends cdk.Stage {
+  public readonly appBuildStack: AppBuildStack;
+
+  constructor(
+    scope: constructs.Construct,
+    id: string,
+    props: AppBuildStackProps
+  ) {
+    super(scope, id, props);
+
+    this.appBuildStack = new AppBuildStack(this, APP_BUILD_STACK_ID, props);
   }
 }

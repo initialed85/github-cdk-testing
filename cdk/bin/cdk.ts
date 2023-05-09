@@ -2,7 +2,7 @@
 
 import * as cdk from "aws-cdk-lib";
 import { InfraPipelineStack } from "../lib/infra-pipeline-stack";
-import { AppBuildStack } from "../lib/app-build-stack";
+import { AppBuildStack, AppBuildStage } from "../lib/app-build-stack";
 
 // TODO: not sure how to inject these (because the execution is in CodePipeline / CodeBuild)
 const AWS_ACCOUNT_ID = "849431480570";
@@ -21,7 +21,7 @@ const app = new cdk.App();
 const INFRA_PIPELINE_STACK_ID = "InfraPipelineStack";
 const APP_BUILD_STACK_ID = "AppBuildStack";
 
-const stackProps = {
+const commonStackProps = {
   env: {
     account: AWS_ACCOUNT_ID,
     region: AWS_DEFAULT_REGION,
@@ -37,11 +37,15 @@ const stackProps = {
 const infraPipelineStack = new InfraPipelineStack(
   app,
   INFRA_PIPELINE_STACK_ID,
-  stackProps
+  commonStackProps
 );
 
-// the AppBuildStack is the stack that builds the app and deploys it to S3
-const appBuildStack = new AppBuildStack(app, APP_BUILD_STACK_ID, stackProps);
+// the AppBuildStage is the stack that builds the app artifacts and deploys them to S3
+const appBuildStage = new AppBuildStage(
+  app,
+  APP_BUILD_STACK_ID,
+  commonStackProps
+);
 
-// infraPipelineStack.pipeline.addStage(appBuildStack);
-infraPipelineStack.addDependency(appBuildStack);
+// this ensures the AppBuildStage is managed in step with the InfraPipelineStack
+infraPipelineStack.pipeline.addStage(appBuildStage);

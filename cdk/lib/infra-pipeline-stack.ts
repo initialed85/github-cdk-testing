@@ -5,13 +5,6 @@ import * as pipelines from "aws-cdk-lib/pipelines";
 const INFRA_PIPELINE_ID = "InfraPipeline";
 const INFRA_PIPELINE_NAME = "InfraPipeline";
 const SYNTH_ID = "Synth";
-const CDK_SYNTH_COMMANDS = [
-  "cd cdk",
-  "npm ci",
-  "npm run build",
-  "npx cdk synth",
-];
-const CDK_OUT_PATH = "cdk/cdk.out";
 
 export interface PipelineStackProps extends cdk.StackProps {
   readonly githubTokenSecretName: string;
@@ -42,8 +35,8 @@ export class InfraPipelineStack extends cdk.Stack {
 
     const shellStep = new pipelines.ShellStep(SYNTH_ID, {
       input: gitHub,
-      commands: CDK_SYNTH_COMMANDS,
-      primaryOutputDirectory: CDK_OUT_PATH,
+      commands: ["cd cdk", "npm ci", "npm run build", "npx cdk synth"],
+      primaryOutputDirectory: "cdk/cdk.out",
     });
 
     this.pipeline = new pipelines.CodePipeline(this, INFRA_PIPELINE_ID, {

@@ -8,7 +8,6 @@ const USER_ID: string = "User";
 const BACKEND_PROJECT_ID = "BackendProject";
 const BACKEND_PUBLIC_ECR_IMAGE = "public.ecr.aws/docker/library/golang";
 const BACKEND_PUBLIC_ECR_TAG = "1.19-bullseye";
-const BACKEND_ECR_ID = "BackendECR";
 const APP_BUILD_STACK_ID = "AppBuildStack";
 
 export interface AppBuildStackProps extends cdk.StackProps {

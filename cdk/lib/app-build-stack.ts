@@ -76,10 +76,10 @@ export class AppBuildStack extends cdk.Stack {
         },
         phases: {
           install: {
-            commands: ["cd ./backend"],
+            commands: ["apt-get update && apt-get install -y zip"],
           },
           pre_build: {
-            commands: ["go mod download"],
+            commands: ["cd ./backend", "go mod download"],
           },
           build: {
             commands: [
@@ -121,10 +121,10 @@ export class AppBuildStack extends cdk.Stack {
         },
         phases: {
           install: {
-            commands: ["cd ./frontend"],
+            commands: ["apt-get update && apt-get install -y zip"],
           },
           pre_build: {
-            commands: ["npm ci"],
+            commands: ["cd ./frontend", "npm ci"],
           },
           build: {
             commands: ["npm run build"],

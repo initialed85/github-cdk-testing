@@ -1,6 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
-import * as construct from "constructs";
+import * as constructs from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import * as elbv2_targets from "aws-cdk-lib/aws-elasticloadbalancingv2-targets";
@@ -48,7 +48,7 @@ export interface GitHubCdkTestingStackProps extends cdk.StackProps {}
 
 export class GitHubCdkTestingStack extends cdk.Stack {
   constructor(
-    scope: construct.Construct,
+    scope: constructs.Construct,
     id: string,
     environment: string,
     gitDescribe: string,

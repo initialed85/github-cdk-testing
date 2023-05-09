@@ -40,18 +40,11 @@ export class AppBuildStack extends cdk.Stack {
     ecr.AuthorizationToken.grantRead(user);
     ecr.PublicGalleryAuthorizationToken.grantRead(user);
 
-    const backendEcr = ecr.Repository.fromRepositoryName(
-      this,
-      BACKEND_ECR_ID,
-      BACKEND_PUBLIC_ECR_IMAGE
-    );
-
     const backendProject = new codebuild.Project(this, BACKEND_PROJECT_ID, {
       source: gitHubSource,
       environment: {
-        buildImage: codebuild.LinuxBuildImage.fromEcrRepository(
-          backendEcr,
-          BACKEND_PUBLIC_ECR_TAG
+        buildImage: codebuild.LinuxBuildImage.fromDockerRegistry(
+          `${BACKEND_PUBLIC_ECR_IMAGE}:${BACKEND_PUBLIC_ECR_TAG}`
         ),
       },
       buildSpec: codebuild.BuildSpec.fromObject({

@@ -10,6 +10,7 @@ const AWS_DEFAULT_REGION = "ap-southeast-2";
 
 // GitHub PAT has permissions "admin:repo_hook, public_repo"; secret recommended to be manually created; e.g.:
 // aws secretsmanager create-secret --name 'github-token' --secret-string 'ghp_abcdef...'
+// aws codebuild import-source-credentials --token ghp_abcdef... --server-type GITHUB --auth-type PERSONAL_ACCESS_TOKEN --should-overwrite
 const GITHUB_TOKEN_SECRET_NAME = "github-token";
 const GITHUB_OWNER = "initialed85";
 const GITHUB_REPO = "github-cdk-testing";

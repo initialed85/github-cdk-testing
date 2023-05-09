@@ -58,11 +58,14 @@ export class AppBuildStack extends cdk.Stack {
         },
         phases: {
           install: {
-            commands: ["cd ./backend && go mod download"],
+            commands: ["cd ./backend"],
+          },
+          pre_build: {
+            commands: ["go mod download"],
           },
           build: {
             commands: [
-              "cd ./backend && go build -x -o bin/root_handler cmd/root_handler/main.go",
+              "go build -x -o bin/root_handler cmd/root_handler/main.go",
             ],
           },
         },

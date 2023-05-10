@@ -47,7 +47,7 @@ export class InfraDeployStack extends cdk.Stack {
             commands: ["cd ./cdk", "npm ci"],
           },
           build: {
-            commands: ["npm run build", "cdk synth"],
+            commands: ["npm run build", "cdk deploy --all"],
           },
         },
       }),

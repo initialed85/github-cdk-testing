@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import * as cdk from "aws-cdk-lib";
-import { InfraPipelineStack } from "../lib/infra-pipeline-stack";
-import { AppBuildStack, AppBuildStage } from "../lib/app-build-stack";
+import { InfraDeployStack } from "../lib/infra-deploy-stack";
+import { AppBuildStack } from "../lib/app-build-stack";
 
 // TODO: not sure how to inject these (because the execution is in CodePipeline / CodeBuild)
 const AWS_ACCOUNT_ID = "849431480570";
@@ -18,7 +18,7 @@ const GITHUB_BRANCH = "master";
 
 const app = new cdk.App();
 
-const INFRA_PIPELINE_STACK_ID = "InfraPipelineStack";
+const INFRA_PIPELINE_STACK_ID = "InfraDeployStack";
 const APP_BUILD_STACK_ID = "AppBuildStack";
 
 const commonStackProps = {
@@ -32,20 +32,20 @@ const commonStackProps = {
   githubBranch: GITHUB_BRANCH,
 };
 
-// the InfraPipelineStack is the root stack that keeps the infra in sync w/ the master branch of this repo
+// the InfraDeployStack is the root stack that keeps the infra in sync w/ the master branch of this repo
 // we need to manually deploy it once and after that it'll keep itself in sync using GitHub webhooks
-const infraPipelineStack = new InfraPipelineStack(
+const infraPipelineStack = new InfraDeployStack(
   app,
   INFRA_PIPELINE_STACK_ID,
   commonStackProps
 );
 
-// the AppBuildStage is the stack that builds the app artifacts and deploys them to S3
-const appBuildStage = new AppBuildStage(
+// the AppBuildStack is the stack that builds the app artifacts and deploys them to S3
+const appBuildStack = new AppBuildStack(
   app,
   APP_BUILD_STACK_ID,
   commonStackProps
 );
 
-// this ensures the AppBuildStage is managed in step with the InfraPipelineStack
-infraPipelineStack.pipeline.addStage(appBuildStage);
+// this ensures the AppBuildStack is managed in step with the InfraDeployStack
+appBuildStack.addDependency(infraPipelineStack);

@@ -6,6 +6,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as s3 from "aws-cdk-lib/aws-s3";
 
 const USER_ID = "User";
+const REPO_PATH_PATTERN = "^/?backend/.*$|^/?frontend/.*$";
 const ARTIFACT_BUCKET_ID = "ArtifactBucket";
 const ARTIFACT_PATH = "$CODEBUILD_WEBHOOK_TRIGGER";
 const BACKEND_PROJECT_ID = "BackendProject";
@@ -36,9 +37,9 @@ export class AppBuildStack extends cdk.Stack {
       repo: props.githubRepo,
       webhook: true,
       webhookFilters: [
-        codebuild.FilterGroup.inEventOf(codebuild.EventAction.PUSH).andBranchIs(
-          props.githubBranch
-        ),
+        codebuild.FilterGroup.inEventOf(
+          codebuild.EventAction.PUSH
+        ).andFilePathIs(REPO_PATH_PATTERN),
       ],
     });
 
@@ -150,19 +151,5 @@ export class AppBuildStack extends cdk.Stack {
       }),
     });
     artifactBucket.grantReadWrite(backendProject);
-  }
-}
-
-export class AppBuildStage extends cdk.Stage {
-  public readonly appBuildStack: AppBuildStack;
-
-  constructor(
-    scope: constructs.Construct,
-    id: string,
-    props: AppBuildStackProps
-  ) {
-    super(scope, id, props);
-
-    this.appBuildStack = new AppBuildStack(this, APP_BUILD_STACK_ID, props);
   }
 }

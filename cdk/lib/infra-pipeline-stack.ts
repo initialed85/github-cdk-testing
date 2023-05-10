@@ -13,7 +13,6 @@ export interface PipelineStackProps extends cdk.StackProps {
   readonly githubBranch: string;
 }
 
-// TODO: disabled for now- CodePipeline variant of InfraDeployStack
 export class InfraPipelineStack extends cdk.Stack {
   public pipeline: pipelines.CodePipeline;
 

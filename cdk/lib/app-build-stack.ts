@@ -25,6 +25,8 @@ export interface AppBuildStackProps extends cdk.StackProps {
 }
 
 export class AppBuildStack extends cdk.Stack {
+  public readonly artifactBucket: s3.Bucket;
+
   constructor(
     scope: constructs.Construct,
     id: string,
@@ -47,7 +49,7 @@ export class AppBuildStack extends cdk.Stack {
     ecr.AuthorizationToken.grantRead(user);
     ecr.PublicGalleryAuthorizationToken.grantRead(user);
 
-    const artifactBucket = new s3.Bucket(this, ARTIFACT_BUCKET_ID, {
+    this.artifactBucket = new s3.Bucket(this, ARTIFACT_BUCKET_ID, {
       enforceSSL: false,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -100,13 +102,13 @@ export class AppBuildStack extends cdk.Stack {
         },
       }),
       artifacts: codebuild.Artifacts.s3({
-        bucket: artifactBucket,
+        bucket: this.artifactBucket,
         name: "/",
         includeBuildId: false,
         packageZip: false,
       }),
     });
-    artifactBucket.grantReadWrite(backendProject);
+    this.artifactBucket.grantReadWrite(backendProject);
 
     const frontendProject = new codebuild.Project(this, FRONTEND_PROJECT_ID, {
       source: gitHubSource,
@@ -144,12 +146,26 @@ export class AppBuildStack extends cdk.Stack {
         },
       }),
       artifacts: codebuild.Artifacts.s3({
-        bucket: artifactBucket,
+        bucket: this.artifactBucket,
         name: "/",
         includeBuildId: false,
         packageZip: false,
       }),
     });
-    artifactBucket.grantReadWrite(backendProject);
+    this.artifactBucket.grantReadWrite(backendProject);
+  }
+}
+
+export class AppBuildStage extends cdk.Stage {
+  public readonly appBuildStack: AppBuildStack;
+
+  constructor(
+    scope: constructs.Construct,
+    id: string,
+    props: AppBuildStackProps
+  ) {
+    super(scope, id, props);
+
+    this.appBuildStack = new AppBuildStack(this, APP_BUILD_STACK_ID, props);
   }
 }

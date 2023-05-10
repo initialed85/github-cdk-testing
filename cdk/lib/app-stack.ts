@@ -15,15 +15,11 @@ const ERROR_HTML: string = "error.html";
 const API_PATH_PATTERN: string = "/api/*";
 const HTTP_PORT: number = 80;
 
-const RESOURCE_GROUP_ID: string = "resourceGroup";
-
 const VPC_ID: string = "vpc";
 const VPC_MAX_AXS: number = 2; // need minimum 2 for the ALB
 const VPC_NAT_GATEWAYS: number = 0; // because they're costly
 
 const USER_ID: string = "user";
-
-const ARTIFACT_BUCKET_ID: string = "artifactBucket";
 
 const CONTENT_BUCKET_ID: string = "contentBucket";
 const CONTENT_BUCKET_ORIGIN_ACCESS_IDENTITY_ID: string =
@@ -43,17 +39,14 @@ const ALB_HTTP_TARGET_ID: string = "albHttpTarget";
 
 const CDN_DISTRIBUTION_ID: string = "cdnDistribution";
 
-export interface GitHubCdkTestingStackProps extends cdk.StackProps {}
+export interface AppStackProps extends cdk.StackProps {
+  readonly artifactBucket: s3.IBucket;
+  readonly gitRefName: string;
+}
 
-export class GitHubCdkTestingStack extends cdk.Stack {
-  constructor(
-    scope: constructs.Construct,
-    id: string,
-    props?: GitHubCdkTestingStackProps
-  ) {
+export class AppStack extends cdk.Stack {
+  constructor(scope: constructs.Construct, id: string, props: AppStackProps) {
     super(scope, id, props);
-
-    const user = new iam.User(this, USER_ID);
 
     const vpc = new ec2.Vpc(this, VPC_ID, {
       maxAzs: VPC_MAX_AXS,
@@ -94,11 +87,14 @@ export class GitHubCdkTestingStack extends cdk.Stack {
     contentBucket.grantPublicAccess(CONTENT_BUCKET_DEPLOYMENT_REMOTE_PATH);
     contentBucket.grantRead(contentBucketOriginAccessIdentity);
 
+    const user = new iam.User(this, USER_ID);
+    props.artifactBucket.grantReadWrite(user);
+
     new s3deploy.BucketDeployment(this, CONTENT_BUCKET_DEPLOYMENT_ID, {
       sources: [
         s3deploy.Source.bucket(
-          contentBucket, // TODO: incorrect; just making code compile
-          `${gitDescribe}/frontend/build.zip`
+          props.artifactBucket,
+          `${props.gitRefName}/frontend/build.zip`
         ),
       ],
       destinationBucket: contentBucket,
@@ -109,8 +105,8 @@ export class GitHubCdkTestingStack extends cdk.Stack {
       runtime: lambda.Runtime.GO_1_X,
       handler: ROOT_LAMBDA_HANDLER,
       code: lambda.Code.fromBucket(
-        contentBucket, // TODO: incorrect; just making code compile
-        `${gitDescribe}/backend/bin.zip`
+        props.artifactBucket,
+        `${props.gitRefName}/backend/bin.zip`
       ),
       vpc: vpc,
     });
